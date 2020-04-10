@@ -12,6 +12,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import datetime as dt
 import numpy as np
 import seaborn as sns
+import nltk
+from nltk.corpus import stopwords
 
 def reddit_search():
     tb.delete('1.0',END)
@@ -67,6 +69,36 @@ def reddit_search():
     except TclError:
         pass
 
+
+
+    # Text numerical analysis
+    prostr = ""
+    for post in this_subreddit.hot(limit=1000):
+            prostr += post.title
+    
+    data_dict = {}
+    data_set_split = prostr.split()
+    
+    for i in data_set_split:
+        data_dict.setdefault(i,0)
+        data_dict[i] += 1
+    rejected_words = ['a','and','I','The','can','your','get','who','Who','what','What','their','after','would','his','they','has','me','Has','A','An','i','by','at','as','do','we','-','|','all','if','from','be','are','that','was','not','so','have','about','this','my','it','with','but','you','new','the','an','of','or','is','to','for','will','over','under','above','in','on',Sub]
+    for i in rejected_words:
+        if i in data_dict:
+            del data_dict[i]
+    title_items = list(data_dict.items())
+    title_items.sort(key=lambda word:word[1],reverse=True)
+    print(title_items)
+    finalstr="\n---------------Most Important Topics---------------------- \n"
+    for i in range(10):
+        finalstr+=str(title_items[i])+"\n"
+        #print(title_items[i])
+
+    tb.insert(INSERT,finalstr)
+
+
+
+    
     tb.insert(INSERT,'\n--------------------------------Description-----------------------------------\n')
 
     # get given subreddit data
@@ -119,7 +151,9 @@ def reddit_search():
     dataset = str(posts.title.values)
     #for post in posts:
      #   dataset=dataset+post.title.str()
-    print(dataset)
+    #print(dataset)
+    
+    
 
     def create_word_cloud(string):
         maskArray = np.array(Image.open("cloud.png"))
@@ -136,7 +170,14 @@ def reddit_search():
     label = Label(image=photo)
     label.image = photo 
     label.grid(row=2,column=5,columnspan=1)
-    
+    '''data_dict = {}
+    data_set_split = dataset.split()
+    for i in data_set_split:
+        data_dict.setdefault(i,0)
+        data_dict[i] += 1
+    title_items = list(data_dict.items())
+    title_items.sort(key=lambda word:word[1],reverse=True)
+    print(title_items)'''
 
 top = tkinter.Tk()
 top.tk.call('encoding', 'system', 'utf-8')
@@ -158,4 +199,3 @@ tb=Text(top)
 tb.grid(row=2,column=1,columnspan=3)
 
 top.mainloop()
-# end
